@@ -11,7 +11,6 @@ import (
     "fmt"
     "os"
     "io"
-    //"math"
     "encoding/binary"
     //"bufio"
 )
@@ -19,7 +18,6 @@ import (
 const MOD25 uint32 = 33554432
 
 func getOp (platter uint32) uint32 {
-    //return platter / math.Exp2(27)
     return platter >> 28
 }
 
@@ -40,7 +38,7 @@ func main() {
 	
 	//buffer := make([]byte, 56364) //14091 words * 4 = 56364 bytes
 	buffer := make([]byte, 4)
-	zeroArray := make([] uint32, 14091)
+	zeroArray := make([] uint32, 0, 14091)
 	
 	for {
 	    n, err := data.Read(buffer)
@@ -73,7 +71,7 @@ func main() {
 	                registers[A] = registers[B]
 	            }  
 	        case 1:
-                
+                //registers[A] =
 	        case 2:
 	        case 3:
 	        case 4:
