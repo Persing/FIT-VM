@@ -12,20 +12,34 @@ import (
     "os"
     "io"
     "encoding/binary"
+    //"container/heap"
     //"bufio"
 )
 
 const MOD25 uint32 = 33554432
+const MAXUINT uint32 = 4294967295 //-1
+
+/*type Address struct {
+    index uint32
+    priority int //deallocated addresses have higher priorities
+}
+
+type addressQueue []*Address
+
+func (queue addressQueue) Less(i, j int) bool {
+    //return the address with the higher priority
+    return queue[i].priority > pq[j].priority
+}*/
 
 func getOp (platter uint32) uint32 {
-    return platter >> 28
+    return platter >> 28 
+    //get the last 4 bits of platter to determine the operation
 }
 
 func main() {
 	
 	platterCollection := make(map[uint32] []uint32)
 	var registers [8]uint32 //8 general purpose registers
-	//registers[0] = 1 //so that the compiler stops whining
 	 
 	var ef uint32 = 0 //execution finger
 	fileName := os.Args[1] //gets the filename from the command line
@@ -37,8 +51,8 @@ func main() {
 	}
 	
 	//buffer := make([]byte, 56364) //14091 words * 4 = 56364 bytes
-	buffer := make([]byte, 4)
-	zeroArray := make([] uint32, 0, 14091)
+	buffer := make([]byte, 4) //buffer for reading in input
+	zeroArray := make([] uint32, 0, 14091) //zero array to store the program
 	
 	for {
 	    n, err := data.Read(buffer)
@@ -55,6 +69,8 @@ func main() {
 	
 	platterCollection[0] = zeroArray
 	fmt.Println(zeroArray)
+	var counter uint32 //used to allocate addresses in the platterCollection
+	addressChan := make(chan uint32) //channel for deallocated addresses
 	
 	for {
 	    platter := zeroArray[ef]
@@ -71,19 +87,43 @@ func main() {
 	                registers[A] = registers[B]
 	            }  
 	        case 1:
-                //registers[A] =
+                registers[A] = platterCollection[registers[B]][registers[C]]
 	        case 2:
+	            platterCollection[registers[A]][registers[B]] = registers[C]
 	        case 3:
+	            registers[A] = (registers[B] + registers[C]) % MAXUINT
 	        case 4:
+	            registers[A] = (registers[B] * registers[C]) % MAXUINT
 	        case 5:
+	            registers[A] = (registers[B] / registers[C])
 	        case 6:
+	            registers[A] = ~(registers[B] & registers[C]) //bitwise not and
 	        case 7:
 	            return
 	        case 8:
+	            registers[A] = make([] uint32, registers[C])
 	        case 9:
+	            //check if key value exists
+	            _, ok := platterCollection[registers[C]]
+	            if ok {
+	                delete(platterCollection, registers[C])
+	            }
 	        case 10:
+	            fmt.Print(string(registers[C])
 	        case 11:
+	            n, err := data.Read(registers[C])
+	            if err != nil && err != io.EOF {
+	                panic(err)
+	            }
+	            
+	            if (n == io.EOF || err == io.EOF) {
+	                registers[C] = MAXUINT //make it pregnant with bits
+	            }
 	        case 12:
+	            if _, ok := platterCollection[registers[C]]; ok {
+	                ef = registers[C]
+	                copy(platterCollection[0], platterCollection[registers[B])
+	            }
 	        case 13:
 	            registers[(platter >> 25) % 7] = platter % MOD25
 	            
