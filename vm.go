@@ -16,8 +16,10 @@ import (
     "bufio"
 )
 
-const MOD25 uint32 = 33554432
-const MAXUINT uint32 = 4294967295 //-1
+const MOD6 uint32 = 63
+const MOD9 uint32 = 511
+const MOD25 uint32 = 33554431
+const MAXUINT uint32 = 4294967295 //2^n-1
 
 /*type Address struct {
     index uint32
@@ -66,20 +68,19 @@ func main() {
 
 	    zeroArray = append(zeroArray, binary.BigEndian.Uint32(buffer))
 	}
-	
-	//fmt.Println(zeroArray)
+
 	platterCollection[0] = zeroArray
 	var counter uint32 //used to allocate addresses in the platterCollection
 	channel := make(chan uint32) //channel for deallocated addresses
 	
 	for {
-	    platter := zeroArray[ef]
+	    platter := platterCollection[0][ef]
 	    ef++
 	    
 	    operation := getOp(platter)
-	    A := (platter >> 6) % 7
-	    B := (platter >> 3) % 7
-	    C := platter % 7
+	    A := (platter >> 6) & 7
+	    B := (platter >> 3) & 7
+	    C := platter & 7
 	    
 	    reader := bufio.NewReader(os.Stdin)
 	    //var input byte
@@ -145,7 +146,7 @@ func main() {
 	                copy(platterCollection[0], platterCollection[registers[B]])
 	            }
 	        case 13:
-	            registers[(platter >> 25) % 7] = platter % MOD25
+	            registers[(platter >> 25) & 7] = platter & MOD25
 	            
 	        default:
 	            fmt.Println("fuck you")
