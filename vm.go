@@ -67,10 +67,10 @@ func main() {
 	    zeroArray = append(zeroArray, binary.BigEndian.Uint32(buffer))
 	}
 	
+	//fmt.Println(zeroArray)
 	platterCollection[0] = zeroArray
-	fmt.Println(zeroArray)
 	var counter uint32 //used to allocate addresses in the platterCollection
-	//4Chan := make(chan uint32) //channel for deallocated addresses
+	channel := make(chan uint32) //channel for deallocated addresses
 	
 	for {
 	    platter := zeroArray[ef]
@@ -102,16 +102,29 @@ func main() {
 	        case 6:
 	            registers[A] = ^(registers[B] & registers[C]) //bitwise not and
 	        case 7:
-	            return
+	            os.Exit(3)
 	        case 8:
-	            platterCollection[counter] = make([] uint32, registers[C])
-	            registers[B] = counter
-	            counter++
+	            address := counter
+	            select {
+	                case x, ok := <-channel:
+	                    if ok {
+	                        address = x
+	                    }
+	                default:
+	                    address = counter
+	                    counter++
+	            }
+	            
+	            
+	            platterCollection[address] = make([] uint32, registers[C])
+	            registers[B] = address
+
 	        case 9:
 	            //check if key value exists
 	            _, ok := platterCollection[registers[C]]
 	            if ok {
 	                delete(platterCollection, registers[C])
+	                channel <- registers[C]
 	            }
 	        case 10:
 	            fmt.Print(string(registers[C]))
@@ -121,7 +134,7 @@ func main() {
 	                panic(err)
 	            }
 	            
-	            //registers[C] = input //cant convert byte to unint32
+	            registers[C] = uint32(input)
 	            
 	            if (err == io.EOF) {
 	                registers[C] = MAXUINT //make it pregnant with bits
@@ -134,8 +147,8 @@ func main() {
 	        case 13:
 	            registers[(platter >> 25) % 7] = platter % MOD25
 	            
-	        //case default:
-	        //    fmt.Println("fuck you")
+	        default:
+	            fmt.Println("fuck you")
 	    }
 	}
 	
