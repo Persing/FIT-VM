@@ -13,7 +13,7 @@ import (
     "io"
     "encoding/binary"
     //"container/heap"
-    //"bufio"
+    "bufio"
 )
 
 const MOD25 uint32 = 33554432
@@ -70,7 +70,7 @@ func main() {
 	platterCollection[0] = zeroArray
 	fmt.Println(zeroArray)
 	var counter uint32 //used to allocate addresses in the platterCollection
-	addressChan := make(chan uint32) //channel for deallocated addresses
+	//4Chan := make(chan uint32) //channel for deallocated addresses
 	
 	for {
 	    platter := zeroArray[ef]
@@ -80,6 +80,9 @@ func main() {
 	    A := (platter >> 6) % 7
 	    B := (platter >> 3) % 7
 	    C := platter % 7
+	    
+	    reader := bufio.NewReader(os.Stdin)
+	    //var input byte
 	    
 	    switch operation {
 	        case 0:
@@ -97,11 +100,13 @@ func main() {
 	        case 5:
 	            registers[A] = (registers[B] / registers[C])
 	        case 6:
-	            registers[A] = ~(registers[B] & registers[C]) //bitwise not and
+	            registers[A] = ^(registers[B] & registers[C]) //bitwise not and
 	        case 7:
 	            return
 	        case 8:
-	            registers[A] = make([] uint32, registers[C])
+	            platterCollection[counter] = make([] uint32, registers[C])
+	            registers[B] = counter
+	            counter++
 	        case 9:
 	            //check if key value exists
 	            _, ok := platterCollection[registers[C]]
@@ -109,20 +114,22 @@ func main() {
 	                delete(platterCollection, registers[C])
 	            }
 	        case 10:
-	            fmt.Print(string(registers[C])
+	            fmt.Print(string(registers[C]))
 	        case 11:
-	            n, err := data.Read(registers[C])
+	            input, err := reader.ReadByte()
 	            if err != nil && err != io.EOF {
 	                panic(err)
 	            }
 	            
-	            if (n == io.EOF || err == io.EOF) {
+	            //registers[C] = input //cant convert byte to unint32
+	            
+	            if (err == io.EOF) {
 	                registers[C] = MAXUINT //make it pregnant with bits
 	            }
 	        case 12:
 	            if _, ok := platterCollection[registers[C]]; ok {
 	                ef = registers[C]
-	                copy(platterCollection[0], platterCollection[registers[B])
+	                copy(platterCollection[0], platterCollection[registers[B]])
 	            }
 	        case 13:
 	            registers[(platter >> 25) % 7] = platter % MOD25
