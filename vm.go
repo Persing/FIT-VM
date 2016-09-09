@@ -87,24 +87,37 @@ func main() {
 	    
 	    switch operation {
 	        case 0:
+	            //fmt.Println("0")
 	            if (registers[C] != 0) {
 	                registers[A] = registers[B]
 	            }  
 	        case 1:
+	        //fmt.Println("1")
                 registers[A] = platterCollection[registers[B]][registers[C]]
 	        case 2:
+	        //fmt.Println("2")
 	            platterCollection[registers[A]][registers[B]] = registers[C]
 	        case 3:
+	        //fmt.Println("3")
 	            registers[A] = (registers[B] + registers[C]) % MAXUINT
 	        case 4:
+	        //fmt.Println("4")
 	            registers[A] = (registers[B] * registers[C]) % MAXUINT
 	        case 5:
+	        //fmt.Println("5")
+	            /*if registers[C] == 0 {
+	                fmt.Println("Divide by zero. System fail")
+	                System.exit(3)
+	            }*/
 	            registers[A] = (registers[B] / registers[C])
 	        case 6:
+	        //fmt.Println("6")
 	            registers[A] = ^(registers[B] & registers[C]) //bitwise not and
 	        case 7:
+	        //fmt.Println("7")
 	            os.Exit(3)
 	        case 8:
+	        //fmt.Println("8")
 	            address := counter
 	            select {
 	                case x, ok := <-channel:
@@ -115,21 +128,28 @@ func main() {
 	                    address = counter
 	                    counter++
 	            }
-	            
-	            
+
 	            platterCollection[address] = make([] uint32, registers[C])
 	            registers[B] = address
 
 	        case 9:
+	        //fmt.Println("9")
 	            //check if key value exists
 	            _, ok := platterCollection[registers[C]]
 	            if ok {
 	                delete(platterCollection, registers[C])
 	                channel <- registers[C]
+	                
+	                if (registers[C] == 0) {
+	                    fmt.Println("Abandoned 0 array. System fail")
+	                    os.Exit(3) 
+	                }
 	            }
 	        case 10:
+	        //fmt.Println("10")
 	            fmt.Print(string(registers[C]))
 	        case 11:
+	        //fmt.Println("11")
 	            input, err := reader.ReadByte()
 	            if err != nil && err != io.EOF {
 	                panic(err)
@@ -141,15 +161,22 @@ func main() {
 	                registers[C] = MAXUINT //make it pregnant with bits
 	            }
 	        case 12:
+	        //fmt.Println("12")
 	            if _, ok := platterCollection[registers[C]]; ok {
-	                ef = registers[C]
-	                copy(platterCollection[0], platterCollection[registers[B]])
+	                originArray := platterCollection[registers[B]]
+	                copiedArray := make([]uint32, len(originArray))
+	                copy(copiedArray, originArray)
+	                platterCollection[0] = copiedArray
 	            }
+	            
+	            ef = registers[C]
 	        case 13:
+	        //fmt.Println("13")
 	            registers[(platter >> 25) & 7] = platter & MOD25
 	            
-	        default:
-	            fmt.Println("fuck you")
+	        default:	            
+	            fmt.Println("Not a valid operator. System fail")
+	             os.Exit(3)
 	    }
 	}
 	
