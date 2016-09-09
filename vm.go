@@ -70,14 +70,15 @@ func main() {
 	}
 
 	platterCollection[0] = zeroArray
-	var counter uint32 //used to allocate addresses in the platterCollection
-	channel := make(chan uint32) //channel for deallocated addresses
+	var counter uint32 = 1 //used to allocate addresses in the platterCollection
+	channel := make(chan uint32, 255) //channel for deallocated addresses
 	
 	for {
 	    platter := platterCollection[0][ef]
 	    ef++
 	    
 	    operation := getOp(platter)
+	    //obtains the last 9 digits of platter, where register indices are
 	    A := (platter >> 6) & 7
 	    B := (platter >> 3) & 7
 	    C := platter & 7
@@ -96,7 +97,10 @@ func main() {
                 registers[A] = platterCollection[registers[B]][registers[C]]
 	        case 2:
 	        //fmt.Println("2")
+	            //fmt.Println(registers[A])
+	            fmt.Println(platterCollection[registers[A]])
 	            platterCollection[registers[A]][registers[B]] = registers[C]
+	            fmt.Println(platterCollection[registers[A]])
 	        case 3:
 	        //fmt.Println("3")
 	            registers[A] = (registers[B] + registers[C]) % MAXUINT
@@ -120,15 +124,13 @@ func main() {
 	        //fmt.Println("8")
 	            address := counter
 	            select {
-	                case x, ok := <-channel:
-	                    if ok {
-	                        address = x
-	                    }
+	                case address = <- channel:
+	                    fmt.Println("channeled")
 	                default:
-	                    address = counter
+	                    //fmt.Println("default")
 	                    counter++
 	            }
-
+                fmt.Println(address)
 	            platterCollection[address] = make([] uint32, registers[C])
 	            registers[B] = address
 
@@ -162,7 +164,7 @@ func main() {
 	            }
 	        case 12:
 	        //fmt.Println("12")
-	            if _, ok := platterCollection[registers[C]]; ok {
+	            if _, ok := platterCollection[registers[B]]; ok {
 	                originArray := platterCollection[registers[B]]
 	                copiedArray := make([]uint32, len(originArray))
 	                copy(copiedArray, originArray)
