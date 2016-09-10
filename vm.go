@@ -70,8 +70,8 @@ func main() {
 	}
 
 	platterCollection[0] = zeroArray
-	var counter uint32 = 1 //used to allocate addresses in the platterCollection
-	channel := make(chan uint32, 255) //channel for deallocated addresses
+	var counter uint32 = 0 //used to allocate addresses in the platterCollection
+	//channel := make(chan uint32, 255) //channel for deallocated addresses
 	
 	for {
 	    platter := platterCollection[0][ef]
@@ -93,22 +93,23 @@ func main() {
 	                registers[A] = registers[B]
 	            }  
 	        case 1:
-	        //fmt.Println("1")
+//		        fmt.Println(A)
+//		        fmt.Println(B)
                 registers[A] = platterCollection[registers[B]][registers[C]]
 	        case 2:
-	        //fmt.Println("2")
+		        //fmt.Println("2")
 	            //fmt.Println(registers[A])
-	            fmt.Println(platterCollection[registers[A]])
+	            //fmt.Println(platterCollection[registers[A]])
 	            platterCollection[registers[A]][registers[B]] = registers[C]
-	            fmt.Println(platterCollection[registers[A]])
+	            //fmt.Println(platterCollection[registers[A]])
 	        case 3:
-	        //fmt.Println("3")
-	            registers[A] = (registers[B] + registers[C]) % MAXUINT
+		        //fmt.Println("3")
+	            registers[A] = (registers[B] + registers[C]) //% MAXUINT
 	        case 4:
-	        //fmt.Println("4")
-	            registers[A] = (registers[B] * registers[C]) % MAXUINT
+		        //fmt.Println("4")
+	            registers[A] = (registers[B] * registers[C]) //% MAXUINT
 	        case 5:
-	        //fmt.Println("5")
+		        //fmt.Println("5")
 	            /*if registers[C] == 0 {
 	                fmt.Println("Divide by zero. System fail")
 	                System.exit(3)
@@ -122,17 +123,27 @@ func main() {
 	            os.Exit(3)
 	        case 8:
 	        //fmt.Println("8")
-	            address := counter
-	            select {
-	                case address = <- channel:
-	                    fmt.Println("channeled")
-	                default:
-	                    //fmt.Println("default")
-	                    counter++
-	            }
-                fmt.Println(address)
-	            platterCollection[address] = make([] uint32, registers[C])
-	            registers[B] = address
+		        for{
+		        	counter ++
+			         _, ok := platterCollection[counter]
+		            if !ok {
+		            	platterCollection[counter] = make([] uint32, registers[C])
+		            	registers[B] = counter
+		            	break
+		            }
+		        }
+		        //fmt.Println(counter)
+//	            address := counter
+//	            select {
+//	                case address = <- channel:
+//	                    //fmt.Println("channeled")
+//	                default:
+//	                    //fmt.Println("default")
+//	                    counter++
+//	            }
+//                //fmt.Println(address)
+//	            platterCollection[address] = make([] uint32, registers[C])
+//	            registers[B] = address
 
 	        case 9:
 	        //fmt.Println("9")
@@ -140,18 +151,18 @@ func main() {
 	            _, ok := platterCollection[registers[C]]
 	            if ok {
 	                delete(platterCollection, registers[C])
-	                channel <- registers[C]
-	                
-	                if (registers[C] == 0) {
-	                    fmt.Println("Abandoned 0 array. System fail")
-	                    os.Exit(3) 
-	                }
+//	                channel <- registers[C]
+//	                
+//	                if (registers[C] == 0) {
+//	                    fmt.Println("Abandoned 0 array. System fail")
+//	                    os.Exit(3) 
+//	                }
 	            }
 	        case 10:
-	        //fmt.Println("10")
+		        //fmt.Println("10")
 	            fmt.Print(string(registers[C]))
 	        case 11:
-	        //fmt.Println("11")
+		        //fmt.Println("11")
 	            input, err := reader.ReadByte()
 	            if err != nil && err != io.EOF {
 	                panic(err)
@@ -163,7 +174,12 @@ func main() {
 	                registers[C] = MAXUINT //make it pregnant with bits
 	            }
 	        case 12:
-	        //fmt.Println("12")
+//		        fmt.Println("12")
+//		        copy(platterCollection[0], platterCollection[registers[B]])
+//		        if len(platterCollection[0]) == len(platterCollection[registers[B]]){
+//		        	fmt.Println("sheeet son")
+//		        }
+//		        ef = registers[C] 
 	            if _, ok := platterCollection[registers[B]]; ok {
 	                originArray := platterCollection[registers[B]]
 	                copiedArray := make([]uint32, len(originArray))
@@ -173,15 +189,12 @@ func main() {
 	            
 	            ef = registers[C]
 	        case 13:
-	        //fmt.Println("13")
+		        //fmt.Println("13")
 	            registers[(platter >> 25) & 7] = platter & MOD25
 	            
 	        default:	            
 	            fmt.Println("Not a valid operator. System fail")
-	             os.Exit(3)
+	            os.Exit(3)
 	    }
-	}
-	
-	
+	}	
 }
-
