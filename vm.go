@@ -14,6 +14,7 @@ import (
     "encoding/binary"
     //"container/heap"
     "bufio"
+    "time"
 )
 
 const MOD6 uint32 = 63
@@ -70,8 +71,10 @@ func main() {
 	}
 
 	platterCollection[0] = zeroArray
-	var counter uint32 = 0 //used to allocate addresses in the platterCollection
+	var counter uint32 = 1 //used to allocate addresses in the platterCollection
 	//channel := make(chan uint32, 255) //channel for deallocated addresses
+	
+	queue := make([]uint32, 0, 1000)
 	
 	for {
 	    platter := platterCollection[0][ef]
@@ -85,29 +88,46 @@ func main() {
 	    
 	    reader := bufio.NewReader(os.Stdin)
 	    //var input byte
+	    start := time.Now()
 	    
 	    switch operation {
 	        case 0:
 	            //fmt.Println("0")
 	            if (registers[C] != 0) {
 	                registers[A] = registers[B]
-	            }  
+	            } 
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 0: ", time.Since(start))
+	                }
 	        case 1:
 //		        fmt.Println(A)
 //		        fmt.Println(B)
+                //fmt.Println("1")
                 registers[A] = platterCollection[registers[B]][registers[C]]
+                if time.Since(start) > 10000 {
+                    fmt.Println("Duration 1: ", time.Since(start))
+                    }
 	        case 2:
 		        //fmt.Println("2")
 	            //fmt.Println(registers[A])
 	            //fmt.Println(platterCollection[registers[A]])
 	            platterCollection[registers[A]][registers[B]] = registers[C]
 	            //fmt.Println(platterCollection[registers[A]])
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 2: ", time.Since(start))
+	                }
 	        case 3:
 		        //fmt.Println("3")
 	            registers[A] = (registers[B] + registers[C]) //% MAXUINT
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 3: ", time.Since(start))
+	                }
 	        case 4:
 		        //fmt.Println("4")
 	            registers[A] = (registers[B] * registers[C]) //% MAXUINT
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 4: ", time.Since(start))
+	                }
 	        case 5:
 		        //fmt.Println("5")
 	            /*if registers[C] == 0 {
@@ -115,24 +135,39 @@ func main() {
 	                System.exit(3)
 	            }*/
 	            registers[A] = (registers[B] / registers[C])
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 5: ", time.Since(start))
+	                }
 	        case 6:
 	        //fmt.Println("6")
 	            registers[A] = ^(registers[B] & registers[C]) //bitwise not and
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 6: ", time.Since(start))
+	                
+	                }
 	        case 7:
 	        //fmt.Println("7")
 	            os.Exit(3)
 	        case 8:
 	        //fmt.Println("8")
-		        for{
-		        	counter ++
-			         _, ok := platterCollection[counter]
-		            if !ok {
-		            	platterCollection[counter] = make([] uint32, registers[C])
-		            	registers[B] = counter
-		            	break
-		            }
-		        }
-		        //fmt.Println(counter)
+		        //for{
+		        	address := counter
+		        	
+		        	if len(queue) > 0 {
+		        	    
+		        	    address = queue[0]
+		        	    queue = queue[1:]
+		        	} else {
+		        	    counter++
+		        	}
+			         //_, ok := platterCollection[counter]
+		            //if !ok {
+		            	platterCollection[address] = make([] uint32, registers[C])
+		            	registers[B] = address
+		            	//break
+		            //}
+		        //}
+		        
 //	            address := counter
 //	            select {
 //	                case address = <- channel:
@@ -144,20 +179,25 @@ func main() {
 //                //fmt.Println(address)
 //	            platterCollection[address] = make([] uint32, registers[C])
 //	            registers[B] = address
+                if time.Since(start) > 10000 {
+                    fmt.Println("Duration 8: ", time.Since(start))
+                    }
 
 	        case 9:
-	        //fmt.Println("9")
 	            //check if key value exists
-	            _, ok := platterCollection[registers[C]]
-	            if ok {
+	           // _, ok := platterCollection[registers[C]]
+	           //if ok {
 	                delete(platterCollection, registers[C])
-//	                channel <- registers[C]
+                    queue = append(queue, registers[C])
 //	                
 //	                if (registers[C] == 0) {
 //	                    fmt.Println("Abandoned 0 array. System fail")
 //	                    os.Exit(3) 
 //	                }
-	            }
+	            //}
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 9: ", time.Since(start))
+	                }
 	        case 10:
 		        //fmt.Println("10")
 	            fmt.Print(string(registers[C]))
@@ -173,14 +213,18 @@ func main() {
 	            if (err == io.EOF) {
 	                registers[C] = MAXUINT //make it pregnant with bits
 	            }
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 11: ", time.Since(start))
+	                }
 	        case 12:
-//		        fmt.Println("12")
+		        //fmt.Println("12")
 //		        copy(platterCollection[0], platterCollection[registers[B]])
 //		        if len(platterCollection[0]) == len(platterCollection[registers[B]]){
 //		        	fmt.Println("sheeet son")
 //		        }
 //		        ef = registers[C] 
-	            if _, ok := platterCollection[registers[B]]; ok {
+	            //if _, ok := platterCollection[registers[B]]; ok {
+	            if registers[B] != 0 {    
 	                originArray := platterCollection[registers[B]]
 	                copiedArray := make([]uint32, len(originArray))
 	                copy(copiedArray, originArray)
@@ -188,9 +232,15 @@ func main() {
 	            }
 	            
 	            ef = registers[C]
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 12: ", time.Since(start))
+	            }
 	        case 13:
 		        //fmt.Println("13")
 	            registers[(platter >> 25) & 7] = platter & MOD25
+	            if time.Since(start) > 10000 {
+	                fmt.Println("Duration 13: ", time.Since(start))
+	                }
 	            
 	        default:	            
 	            fmt.Println("Not a valid operator. System fail")
